@@ -1,152 +1,146 @@
-# TOKAMAK FUSION REACTOR SIMULATION (3D RAYTRACED)
+# NeuroFusion Reactor
 
-A comprehensive **3D volumetric simulation** of a Tokamak nuclear fusion reactor, featuring realistic plasma physics, magnetic confinement, and a high-fidelity **ray-traced rendering engine** using OpenGL Compute Shaders.
+`NeuroFusion Reactor` is a standalone interactive prototype that hybridizes:
 
-![Project Status](https://img.shields.io/badge/status-active-brightgreen)
-![OpenGL](https://img.shields.io/badge/OpenGL-4.6-blue)
-![Language](https://img.shields.io/badge/C++-17-blue)
+- `FusionCpp` (tokamak fusion / plasma / confinement simulation ideas)
+- Denis Dmitriev's "Neural Network 3D Simulation" (3D MLP/CNN/SNN visual language)
 
-PROGRESS SO FAR:
+It turns the tokamak torus into a neural control substrate and layers a playable challenge mode on top.
 
+## Concept
 
+The core idea is a "neuralized tokamak" where plasma telemetry is fed into stylized neural controllers that directly modulate magnetic behavior:
 
-https://github.com/user-attachments/assets/cf4fcc6d-587e-4783-8f35-de0766aaf0fe
+- `MLP Coil Brain`
+  - global feed-forward control for broad stabilization
+- `CNN Flux Vision`
+  - circular convolution over torus sensor bins to find/quench hotspots
+- `SNN Spike Grid`
+  - event-driven spike pulses for burst timing and rhythmic control
 
+Controller outputs drive:
 
+- toroidal response
+- poloidal response
+- pulse injection / burst behavior
 
-## OVERVIEW
+## Features
 
-This project simulates the complex behavior of plasma within a tokamak reactor. Originally a 2D cross-sectional simulation, it has been upgraded to a full **3D volumetric experience**.
+### Simulation + Visuals
 
-The simulation combines:
-1.  **Plasma Physics Engine**: Calculates particle trajectories (Lorentz force), Coulomb collisions, and D-T fusion reactions.
-2.  **Volumetric Raytracing**: A custom compute shader (`tokamak_raytrace.comp`) performs real-time raymarching to render the plasma density, temperature gradients, and the reactor vessel with physically-based shading.
-3.  **Interactive Controls**: Full orbit camera control and real-time parameter tuning via ImGui.
+- Real-time torus plasma visualization (canvas-based)
+- Neural overlays for `MLP`, `CNN`, and `SNN` modes
+- Fusion burst glows and field-line rendering
+- Orbit camera with drag + scroll zoom
 
-## PROJECT STRUCTURE
+### Mission / Game Layer
 
+- 3-phase challenge mode
+  - Phase 1: Edge stabilization (`MLP`)
+  - Phase 2: Hotspot quench (`CNN`)
+  - Phase 3: Spike burn window (`SNN`)
+- Score system with breakdown
+  - base scoring
+  - mode bonuses
+  - mode penalties
+  - phase clear bonuses
+  - pulse bonuses
+- Integrity + timer failure conditions
+- Mission report overlay (win/lose summary)
+- Mode usage analytics and mode switch tracking
+
+### Audio (Web Audio)
+
+- Live sonification of:
+  - spikes
+  - bursts
+  - yield
+  - instability
+- Master volume slider
+- Audio enable/disable controls
+
+### FusionCpp Bridge (v2)
+
+- Export current live state as JSON profile (`neurofusion-bridge-v2`)
+- Copy a generated C++ preset snippet
+- Paste/import bridge JSON and apply controls/mode/camera
+- Load bridge JSON from file
+- Save/load local bridge preset (`localStorage`)
+
+## Run Locally
+
+From `neurofusion-reactor/`:
+
+```bash
+python -m http.server 4173
 ```
-project/
-├── CMakeLists.txt              # Build configuration (CMake)
-├── main.cpp                    # Application entry, windowing, and main loop
-├── tokamak_raytrace.comp       # GLSL Compute Shader for volumetric raytracing
-├── camera.h                    # Orbit camera implementation
-├── plasma_physics.h            # core physics engine (particle dynamics, fusion)
-├── magnetic_field.h            # Magnetic field calculations (toroidal + poloidal)
-├── tokamak_geometry.h          # Reactor geometry definition
-├── particle.h                  # Particle data structures
-├── ray_tracing.cpp             # Host-side raytracing setup and buffer management
-├── particle.vert / .frag       # (Legacy) Basic rasterization shaders
-├── external/                   # Dependencies (GLFW, GLAD, GLM)
-├── imgui-master/               # ImGui library for UI
-└── PHYSICS_LECTURE.md          # Comprehensive physics documentation
+
+Open:
+
+```text
+http://127.0.0.1:4173
 ```
 
-## FEATURES
+## Controls
 
-### Physics Simulation
-- **3D Magnetic Confinement**: Particles follow helical paths along the two magnetic field lines (toroidal and poloidal (calculated)) in a torus.
-- **Fusion Reactions**: Deuterium-Tritium (D-T) fusion producing Alpha particles and Neutrons.
-- **Thermal Plasma**: Maxwellian velocity distribution at 150 million Kelvin.
-- **Particle Behavior**: Coulomb repulsion, Debye shielding, and boundary reflection.
+### Mouse
 
-### Visual & Rendering
-- **Volumetric Raytracing**: Real-time accumulation of plasma density and emission using raymarching.
-- **Dynamic Lighting**: Plasma glows based on density and temperature; fusion events create bright flashes.
-- **Reactor Vessel**: Physically-based rendering (PBR) of the tokamak interior.
-- **ImGui Integration**: Real-time control over simulation parameters (under development).
+- Drag: orbit camera
+- Mouse wheel: zoom
 
-###  Camera & Controls
-- **Orbit Camera**:
-    - **Rotate**: Left Mouse Button + Drag
-    - **Pan**: Right Mouse Button + Drag
-    - **Zoom**: Mouse Scroll Wheel
-- **Keyboard**:
-    - **ESC**: Exit simulation
+### Keyboard
 
-## COMPILATION
+- `Enter`: start/restart mission
+- `Space`: manual pulse
+- `1` / `2` / `3`: switch `MLP / CNN / SNN`
+- `ArrowLeft` / `ArrowRight`: heating down/up
+- `ArrowDown` / `ArrowUp`: magnetic gain down/up
+- `A`: adaptive learning up
+- `B`: turbulence bias up
+- `P`: pause/resume
+- `R`: re-seed simulation
+- `F`: toggle fullscreen
+- `O`: toggle mission report overlay
+- `Esc`: close mission report overlay (if open)
 
-The project now uses **CMake** for building.
+### UI
 
-### Prerequisites
-- **OpenGL 4.3+** (Required for Compute Shaders)
-- **CMake 3.20+**
-- **C++17 Compiler** (MSVC recommended on Windows)
+- Mode tabs: switch controller mode
+- Sliders: tune control loop parameters
+- Mission panel: start/restart mission, manual pulse
+- Audio panel: enable audio + adjust volume
+- Bridge panel: export/import/apply presets
 
-### Build Instructions (Windows)
+## Automation Hooks (Testing / Bots)
 
-1.  Open the project folder in a terminal.
-2.  Create a build directory:
-    ```bash
-    mkdir build
-    cd build
-    ```
-3.  Configure with CMake:
-    ```bash
-    cmake ..
-    ```
-4.  Build the project:
-    ```bash
-    cmake --build . --config Release
-    ```
-5.  Run the executable:
-    ```bash
-    ./Release/FusionTokamakSim.exe
-    ```
+The app exposes helpers for automated browser control:
 
-*Note: The current CMake setup supports Windows and Ubuntu. On Linux, dependencies are fetched automatically during CMake configure.*
+- `window.render_game_to_text()`
+  - returns concise JSON state for the current simulation/game state
+- `window.advanceTime(ms)`
+  - deterministic stepping for automated test loops
+- `window.get_bridge_profile()`
+  - returns current bridge JSON object
+- `window.apply_bridge_profile(profileOrText)`
+  - applies imported bridge profile (object or JSON string)
 
-### Build Instructions (Ubuntu)
+These hooks are useful for Playwright-based testing and scripted scenarios.
 
-The project can now be built directly on Ubuntu using CMake. Dependencies (`GLFW`, `GLAD`, `GLM`, `ImGui`) are fetched automatically during configure.
+## Project Files
 
-1. Install required system packages:
-    ```bash
-    sudo apt update
-    sudo apt install -y build-essential cmake git pkg-config \
-      libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
-      libwayland-dev libxkbcommon-dev wayland-protocols libegl1-mesa-dev libgl1-mesa-dev
-    ```
+- `index.html` - UI layout and panels
+- `styles.css` - visual styling and responsive layout
+- `app.js` - simulation, rendering, mission systems, audio engine, bridge logic
+- `favicon.svg` - app icon
+- `progress.md` - build log / handoff notes
 
-2. Configure and build:
-    ```bash
-    cmake -S . -B build-ubuntu
-    cmake --build build-ubuntu -j
-    ```
+## Notes / Limitations
 
-3. Run:
-    ```bash
-    ./build-ubuntu/FusionTokamakSim
-    ```
+- This is a creative prototype, not a physically accurate reactor controller.
+- The bridge export is a practical integration layer for FusionCpp, but FusionCpp-side preset loading is not implemented here.
+- Audio starts only after user interaction due to browser autoplay restrictions.
 
-Notes:
-- First configure/build requires internet access for dependency download.
-- Requires an OpenGL 4.3+ capable GPU/driver for compute shaders.
+## Credits / Inspiration
 
-## PHYSICS DOCUMENTATION
-
-See **PHYSICS_LECTURE.md** for:
-- Detailed derivations of magnetic confinement.
-- Fusion cross-sections and reaction rates.
-- Plasma stability and tokamak geometry.
-
-## SCIENTIFIC ACCURACY & LIMITATIONS
-
-This simulation implements:
-- ✓ Lorentz force (v × B)
-- ✓ D-T Fusion energy release (17.6 MeV)
-- ✓ Volumetric plasma density visualization
-- ✓ Toroidal confinement geometry
-
-**Simplifications**:
-- The raytracer visualizes a density field derived from particle positions/functions, which is an approximation of the discrete particle data for performance.
-- Relativistic effects are ignored.
-- Full Magnetohydrodynamics (MHD) fluid simulation is approximated by particle kinetics.
-
-## LICENSE
-
-This code is provided for educational and research purposes.
-
----
-
-**Note**: Rendering volumetric plasma is GPU-intensive. If you experience low framerates, try reducing the window size or adjusting the raymarching step size in `tokamak_raytrace.comp`.
+- `FusionCpp` by Amine Harrabi (tokamak fusion simulation inspiration)
+- Denis Dmitriev's "Neural Network 3D Simulation" (visual + conceptual inspiration for MLP/CNN/SNN modes)
