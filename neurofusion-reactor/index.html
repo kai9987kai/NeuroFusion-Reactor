@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NeuroFusion Reactor</title>
+  <meta name="description" content="A hybrid concept prototype combining tokamak plasma simulation aesthetics with 3D neural network control modes (MLP, CNN, SNN).">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="bg-blobs" aria-hidden="true">
+    <div class="blob blob-a"></div>
+    <div class="blob blob-b"></div>
+    <div class="blob blob-c"></div>
+  </div>
+
+  <main class="layout">
+    <section class="stage-card" aria-label="Simulation viewport">
+      <header class="stage-header">
+        <div>
+          <p class="eyebrow">FusionCpp x Neural Network 3D Simulation</p>
+          <h1>NeuroFusion Reactor</h1>
+        </div>
+        <div class="header-actions">
+          <button id="challengeBtn" class="ghost-btn" type="button">Start Challenge</button>
+          <button id="audioBtn" class="ghost-btn" type="button" aria-pressed="false">Audio: Off</button>
+          <button id="pauseBtn" class="ghost-btn" type="button" aria-pressed="false">Pause</button>
+          <button id="resetBtn" class="ghost-btn" type="button">Re-seed</button>
+        </div>
+      </header>
+
+      <div class="canvas-wrap">
+        <canvas id="reactorCanvas" aria-label="Neuro-fusion reactor simulation"></canvas>
+        <div class="canvas-overlay">
+          <div class="mode-tabs" role="tablist" aria-label="Controller mode">
+            <button class="mode-tab is-active" role="tab" aria-selected="true" data-mode="mlp" id="tab-mlp">MLP Coil Brain</button>
+            <button class="mode-tab" role="tab" aria-selected="false" data-mode="cnn" id="tab-cnn">CNN Flux Vision</button>
+            <button class="mode-tab" role="tab" aria-selected="false" data-mode="snn" id="tab-snn">SNN Spike Grid</button>
+          </div>
+          <div class="canvas-caption">
+            <p id="modeTitle">MLP Coil Brain</p>
+            <p id="modeDescription">A feed-forward controller maps plasma sensors to toroidal and poloidal coil corrections.</p>
+            <p class="status-line"><span id="challengeStateBadge" class="badge">Sandbox</span> <span id="challengeStatusInline">Press Enter or Start Challenge to begin mission mode.</span></p>
+          </div>
+        </div>
+        <div id="missionReportOverlay" class="mission-report-overlay" hidden aria-live="polite">
+          <div class="mission-report-card" role="dialog" aria-modal="false" aria-labelledby="missionReportTitle">
+            <div class="mission-report-head">
+              <p class="eyebrow">Mission Report</p>
+              <h2 id="missionReportTitle">Containment Outcome</h2>
+              <p id="missionReportSubtitle" class="mission-report-subtitle">Summary unavailable</p>
+            </div>
+            <div class="mission-report-grid">
+              <div class="metric compact">
+                <span class="metric-label">Final Score</span>
+                <strong id="reportScore">0</strong>
+              </div>
+              <div class="metric compact">
+                <span class="metric-label">Time Left</span>
+                <strong id="reportTimeLeft">0.0s</strong>
+              </div>
+              <div class="metric compact">
+                <span class="metric-label">Integrity</span>
+                <strong id="reportIntegrity">0%</strong>
+              </div>
+              <div class="metric compact">
+                <span class="metric-label">Mode Switches</span>
+                <strong id="reportSwitches">0</strong>
+              </div>
+              <div class="metric compact">
+                <span class="metric-label">Mode Usage</span>
+                <strong id="reportModeUsage">MLP 0s | CNN 0s | SNN 0s</strong>
+              </div>
+              <div class="metric compact">
+                <span class="metric-label">Breakdown</span>
+                <strong id="reportBreakdown">Base 0 | Bonus 0 | Penalty 0</strong>
+              </div>
+            </div>
+            <p id="reportReason" class="microcopy">Complete or fail a mission to generate a report.</p>
+            <div class="row-actions">
+              <button id="reportRestartBtn" class="ghost-btn" type="button">Run Again</button>
+              <button id="reportCloseBtn" class="ghost-btn" type="button">Close Report</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel-card" aria-label="Controls and metrics">
+      <section class="panel-block">
+        <h2>Mission Control</h2>
+        <div class="mission-grid">
+          <div class="metric compact">
+            <span class="metric-label">State</span>
+            <strong id="missionState">Sandbox</strong>
+          </div>
+          <div class="metric compact">
+            <span class="metric-label">Phase</span>
+            <strong id="missionPhase">0 / 3</strong>
+          </div>
+          <div class="metric compact">
+            <span class="metric-label">Timer</span>
+            <strong id="missionTimer">120.0s</strong>
+          </div>
+          <div class="metric compact">
+            <span class="metric-label">Score</span>
+            <strong id="missionScore">0</strong>
+          </div>
+          <div class="metric compact">
+            <span class="metric-label">Integrity</span>
+            <strong id="missionIntegrity">100%</strong>
+            <div class="meter danger"><span id="barIntegrity"></span></div>
+          </div>
+          <div class="metric compact">
+            <span class="metric-label">Phase Progress</span>
+            <strong id="missionProgress">0%</strong>
+            <div class="meter"><span id="barMissionProgress"></span></div>
+          </div>
+        </div>
+        <p id="missionObjective" class="microcopy">Objective: Start the challenge. Stabilize the reactor while adapting the neural controller.</p>
+        <p id="missionHint" class="microcopy">Shortcuts: `1/2/3` modes, arrows tune heating/gain, `A/B` tune adapt/turbulence, `Space` pulse, `F` fullscreen.</p>
+        <div class="row-actions">
+          <button id="startMissionBtn" class="ghost-btn" type="button">Start / Restart</button>
+          <button id="pulseBtn" class="ghost-btn" type="button">Manual Pulse</button>
+        </div>
+      </section>
+
+      <section class="panel-block">
+        <h2>Reactor Metrics</h2>
+        <div class="metric-grid" id="metricGrid">
+          <div class="metric">
+            <span class="metric-label">Temp</span>
+            <strong id="metricTemp">0 MK</strong>
+            <div class="meter"><span id="barTemp"></span></div>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Density</span>
+            <strong id="metricDensity">0</strong>
+            <div class="meter"><span id="barDensity"></span></div>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Confinement</span>
+            <strong id="metricConfinement">0%</strong>
+            <div class="meter"><span id="barConfinement"></span></div>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Instability</span>
+            <strong id="metricInstability">0%</strong>
+            <div class="meter"><span id="barInstability"></span></div>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Fusion Yield</span>
+            <strong id="metricYield">0 MW</strong>
+            <div class="meter"><span id="barYield"></span></div>
+          </div>
+          <div class="metric">
+            <span class="metric-label">NN Coherence</span>
+            <strong id="metricCoherence">0%</strong>
+            <div class="meter"><span id="barCoherence"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-block">
+        <h2>Control Loops</h2>
+        <label class="control">
+          <div class="control-row">
+            <span>Heating Drive</span>
+            <output id="heatingOut">72%</output>
+          </div>
+          <input id="heating" type="range" min="0" max="100" value="72">
+        </label>
+        <label class="control">
+          <div class="control-row">
+            <span>Magnetic Gain</span>
+            <output id="gainOut">61%</output>
+          </div>
+          <input id="gain" type="range" min="0" max="100" value="61">
+        </label>
+        <label class="control">
+          <div class="control-row">
+            <span>Adaptive Learning</span>
+            <output id="adaptOut">38%</output>
+          </div>
+          <input id="adapt" type="range" min="0" max="100" value="38">
+        </label>
+        <label class="control">
+          <div class="control-row">
+            <span>Turbulence Bias</span>
+            <output id="turbulenceOut">24%</output>
+          </div>
+          <input id="turbulence" type="range" min="0" max="100" value="24">
+        </label>
+      </section>
+
+      <section class="panel-block">
+        <h2>Audio Reactor</h2>
+        <label class="control">
+          <div class="control-row">
+            <span>Master Volume</span>
+            <output id="volumeOut">42%</output>
+          </div>
+          <input id="volume" type="range" min="0" max="100" value="42">
+        </label>
+        <div class="row-actions">
+          <button id="audioToggleBtn" class="ghost-btn" type="button" aria-pressed="false">Enable Audio</button>
+          <span id="audioStatus" class="inline-status">Audio engine idle</span>
+          <span id="audioBeat" class="beat-dot" aria-hidden="true"></span>
+        </div>
+      </section>
+
+      <section class="panel-block">
+        <h2>FusionCpp Bridge</h2>
+        <div class="row-actions">
+          <button id="exportJsonBtn" class="ghost-btn" type="button">Export JSON Profile</button>
+          <button id="copyCppBtn" class="ghost-btn" type="button">Copy C++ Preset</button>
+        </div>
+        <label class="control">
+          <div class="control-row">
+            <span>Import / Paste Bridge JSON</span>
+            <button id="loadBridgeFileBtn" class="ghost-btn" type="button">Load File</button>
+          </div>
+          <textarea id="bridgeImportInput" class="bridge-input" rows="8" placeholder="Paste a neurofusion-bridge JSON profile here to apply controls/mode/camera."></textarea>
+          <input id="bridgeFileInput" type="file" accept="application/json,.json" hidden>
+        </label>
+        <div class="row-actions">
+          <button id="applyBridgeBtn" class="ghost-btn" type="button">Apply Imported Profile</button>
+          <button id="saveLocalBridgeBtn" class="ghost-btn" type="button">Save Local Preset</button>
+          <button id="loadLocalBridgeBtn" class="ghost-btn" type="button">Load Local Preset</button>
+        </div>
+        <p id="bridgeStatus" class="microcopy">Bridge exports map live controls/metrics to a C++-friendly preset for FusionCpp integration.</p>
+        <pre id="bridgePreview" class="bridge-preview" aria-label="FusionCpp bridge preview"></pre>
+      </section>
+
+      <section class="panel-block">
+        <h2>Innovation Layer</h2>
+        <ul class="innovation-list">
+          <li>Torus-shaped neural substrate directly embedded in the reactor geometry.</li>
+          <li>Mode-specific control logic: MLP (global), CNN (spatial hotspots), SNN (spikes).</li>
+          <li>Self-tuning coils adapt toward stable confinement while chasing fusion bursts.</li>
+          <li>Mission mode turns the simulation into a playable reactor stabilization challenge.</li>
+          <li>Audio sonification maps spikes, bursts, and confinement to a live synthesizer.</li>
+        </ul>
+        <p class="microcopy">
+          Drag to orbit. Scroll to zoom. This is a real-time concept prototype, not a physically accurate reactor controller.
+        </p>
+      </section>
+    </aside>
+  </main>
+
+  <noscript>This demo requires JavaScript.</noscript>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
